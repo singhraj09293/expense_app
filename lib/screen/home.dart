@@ -1,3 +1,4 @@
+import 'package:expense_app/screen/add_exp.dart';
 import 'package:expense_app/service/api_service.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -99,6 +100,13 @@ class _HomeState extends State<Home> {
           ),
         ),
       ),
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: Theme.of(context).colorScheme.primary,
+        child: Icon(Icons.add, color: Colors.black),
+        onPressed: () {
+          Navigator.push(context, MaterialPageRoute(builder: (_) => AddExp()));
+        },
+      ),
     );
   }
 }
@@ -133,10 +141,64 @@ class _RecentExpState extends State<RecentExp> {
       physics: NeverScrollableScrollPhysics(),
       itemCount: expense.length,
       itemBuilder: (context, index) {
-        return ListTile(
-          title: Text(expense[index]['title']),
-          subtitle: Text(expense[index]['date']),
-          trailing: Text(expense[index]['amount']),
+        Map<String, IconData> categoryIcons = {
+          'food': Icons.restaurant,
+          'travel': Icons.directions_car,
+          'shopping': Icons.shopping_bag,
+          'rent': Icons.home,
+        };
+        final exp = expense[index];
+        return Card(
+          margin: EdgeInsets.symmetric(vertical: 6),
+          color: Theme.of(context).colorScheme.secondary,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Row(
+              children: [
+                Container(
+                  padding: EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.primary.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(15),
+                  ),
+                  child: Icon(
+                    categoryIcons[exp['title']] ?? Icons.attach_money,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                ),
+                SizedBox(width: 20),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      exp['title'] ?? 'No Title',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 25,
+                      ),
+                    ),
+                    Text(
+                      (exp['date'] ?? 'No date').toString().substring(0, 10),
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.tertiary,
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(width: 70),
+                Text(
+                  '~₹${exp['amount'] ?? 0}',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 25),
+                ),
+              ],
+            ),
+          ),
         );
       },
     );

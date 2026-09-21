@@ -140,7 +140,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           Navigator.pushReplacementNamed(context, '/home');
                         } catch (e) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text("User not found")),
+                            SnackBar(content: Text("User not found $e")),
                           );
                         }
                       }

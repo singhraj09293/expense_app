@@ -12,7 +12,7 @@ class ApiService {
   Future<String> login(String username, String password) async {
     final response = await _dio.post(
       "/auth/login",
-      data: {"username": username, "password": password},
+      data: {"username": username, "email": username, "password": password},
     );
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('token', response.data['token']);
@@ -49,5 +49,16 @@ class ApiService {
       options: Options(headers: {'Authorization': tokens}),
     );
     return response.data['expense'];
+  }
+
+  Future<String> addExpense(String title, int amount, DateTime date) async {
+    final prefs = await SharedPreferences.getInstance();
+    final tokens = prefs.getString('token');
+    final response = await _dio.post(
+      '/expense',
+      data: {"title": title, "amount": amount, "date": date.toIso8601String()},
+      options: Options(headers: {'Authorization': tokens}),
+    );
+    return response.data['message'];
   }
 }

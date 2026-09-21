@@ -188,7 +188,7 @@ class _RegisterState extends State<Register> {
                             fname.text.trim(),
                             email.text.trim(),
                           );
-                          Navigator.pushReplacementNamed(context, "/home");
+                          Navigator.pushReplacementNamed(context, "/login");
                         } catch (e) {
                           ScaffoldMessenger.of(
                             context,
@@ -200,7 +200,7 @@ class _RegisterState extends State<Register> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
-                          'Log In',
+                          'Register',
                           style: TextStyle(
                             color: Colors.black,
                             fontWeight: FontWeight.bold,
