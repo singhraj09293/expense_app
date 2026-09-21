@@ -4,8 +4,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 class ApiService {
   final _dio = Dio(
     BaseOptions(
-      // baseUrl: "http://10.215.29.30:3000"
-      baseUrl: "http://localhost:3000",
+      baseUrl: "http://10.215.29.30:3000",
+      // baseUrl: "http://localhost:3000",
     ),
   );
 
@@ -16,6 +16,7 @@ class ApiService {
     );
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('token', response.data['token']);
+    await prefs.setString('username', response.data['username']);
     return response.data['token'];
   }
 
@@ -34,6 +35,19 @@ class ApiService {
         "name": name,
       },
     );
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('username', username);
     return response.data['message'];
+  }
+
+  Future<List> getExpense() async {
+    final prefs = await SharedPreferences.getInstance();
+    final tokens = prefs.getString('token');
+    print(tokens);
+    final response = await _dio.get(
+      '/expense',
+      options: Options(headers: {'Authorization': tokens}),
+    );
+    return response.data['expense'];
   }
 }
