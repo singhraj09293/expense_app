@@ -16,6 +16,7 @@ class _HomeState extends State<Home> {
   void initState() {
     super.initState();
     _fetchUser();
+    _fetchExpense();
   }
 
   void _fetchUser() async {
@@ -24,6 +25,15 @@ class _HomeState extends State<Home> {
       username = pref.getString('username') ?? 'user';
     });
     print('username : $username');
+  }
+
+  List expense = [];
+  void _fetchExpense() async {
+    final data = await ApiService().getExpense();
+    print('data : $data');
+    setState(() {
+      expense = data;
+    });
   }
 
   @override
@@ -95,7 +105,82 @@ class _HomeState extends State<Home> {
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
               ),
               SizedBox(height: 10),
-              RecentExp(),
+              ListView.builder(
+                shrinkWrap: true,
+                physics: NeverScrollableScrollPhysics(),
+                itemCount: expense.length,
+                itemBuilder: (context, index) {
+                  Map<String, IconData> categoryIcons = {
+                    'food': Icons.restaurant,
+                    'travel': Icons.directions_car,
+                    'shopping': Icons.shopping_bag,
+                    'rent': Icons.home,
+                  };
+                  final exp = expense[index];
+                  return Card(
+                    margin: EdgeInsets.symmetric(vertical: 6),
+                    color: Theme.of(context).colorScheme.secondary,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.primary.withValues(alpha: 0.2),
+                              borderRadius: BorderRadius.circular(15),
+                            ),
+                            child: Icon(
+                              categoryIcons[exp['title']] ?? Icons.attach_money,
+                              color: Theme.of(context).colorScheme.primary,
+                            ),
+                          ),
+                          SizedBox(width: 20),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  exp['title'] ?? 'No Title',
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 23,
+                                  ),
+                                ),
+                                Text(
+                                  (exp['date'] ?? 'No date').toString().substring(
+                                    0,
+                                    10,
+                                  ),
+                                  style: TextStyle(
+                                    color: Theme.of(context).colorScheme.tertiary,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          SizedBox(width: 70),
+                          Text(
+                            '~₹${exp['amount'] ?? 0}',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 20,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
             ],
           ),
         ),
@@ -103,104 +188,16 @@ class _HomeState extends State<Home> {
       floatingActionButton: FloatingActionButton(
         backgroundColor: Theme.of(context).colorScheme.primary,
         child: Icon(Icons.add, color: Colors.black),
-        onPressed: () {
-          Navigator.push(context, MaterialPageRoute(builder: (_) => AddExp()));
+        onPressed: () async{
+          final result =await Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => AddExp()),
+          );
+          if (result == true) {
+            _fetchExpense();
+          }
         },
       ),
-    );
-  }
-}
-
-class RecentExp extends StatefulWidget {
-  const RecentExp({super.key});
-
-  @override
-  State<RecentExp> createState() => _RecentExpState();
-}
-
-class _RecentExpState extends State<RecentExp> {
-  @override
-  void initState() {
-    super.initState();
-    _fetchExpense();
-  }
-
-  List expense = [];
-  void _fetchExpense() async {
-    final data = await ApiService().getExpense();
-    print('data : $data');
-    setState(() {
-      expense = data;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return ListView.builder(
-      shrinkWrap: true,
-      physics: NeverScrollableScrollPhysics(),
-      itemCount: expense.length,
-      itemBuilder: (context, index) {
-        Map<String, IconData> categoryIcons = {
-          'food': Icons.restaurant,
-          'travel': Icons.directions_car,
-          'shopping': Icons.shopping_bag,
-          'rent': Icons.home,
-        };
-        final exp = expense[index];
-        return Card(
-          margin: EdgeInsets.symmetric(vertical: 6),
-          color: Theme.of(context).colorScheme.secondary,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Row(
-              children: [
-                Container(
-                  padding: EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: Theme.of(
-                      context,
-                    ).colorScheme.primary.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(15),
-                  ),
-                  child: Icon(
-                    categoryIcons[exp['title']] ?? Icons.attach_money,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                ),
-                SizedBox(width: 20),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      exp['title'] ?? 'No Title',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 25,
-                      ),
-                    ),
-                    Text(
-                      (exp['date'] ?? 'No date').toString().substring(0, 10),
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.tertiary,
-                      ),
-                    ),
-                  ],
-                ),
-                SizedBox(width: 70),
-                Text(
-                  '~₹${exp['amount'] ?? 0}',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 25),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
     );
   }
 }
