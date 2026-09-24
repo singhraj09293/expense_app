@@ -38,6 +38,8 @@ class _HomeState extends State<Home> {
 
   @override
   Widget build(BuildContext context) {
+    final total = expense.fold(0, (sum, e) => sum + (e['amount'] ?? 0) as int);
+
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -60,6 +62,7 @@ class _HomeState extends State<Home> {
               ),
               SizedBox(height: 20),
               Container(
+                width: double.infinity,
                 padding: EdgeInsets.all(15),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(16),
@@ -80,7 +83,7 @@ class _HomeState extends State<Home> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '\$48,58,89',
+                      '₹$total',
                       style: TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
@@ -89,7 +92,7 @@ class _HomeState extends State<Home> {
                     ),
                     SizedBox(height: 7),
                     Text(
-                      'Available balance across 3 linked vaults',
+                      'Available balance across linked vaults',
                       style: TextStyle(
                         color: Theme.of(context).colorScheme.tertiary,
                         fontSize: 18,
@@ -117,65 +120,103 @@ class _HomeState extends State<Home> {
                     'rent': Icons.home,
                   };
                   final exp = expense[index];
-                  return Card(
-                    margin: EdgeInsets.symmetric(vertical: 6),
-                    color: Theme.of(context).colorScheme.secondary,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                  return Dismissible(
+                    key: Key(exp['_id']),
+                    direction: DismissDirection.endToStart,
+                    background: Container(
+                      color: Theme.of(context).colorScheme.primary,
+                      alignment: Alignment.centerRight,
+                      padding: EdgeInsets.only(right: 20),
+                      child: Icon(Icons.delete, color: Colors.white),
                     ),
+                    onDismissed: (direction) async {
+                      setState(() {
+                        expense.removeAt(index);
+                      });
+                      await ApiService().deleteExp(exp['_id']);
+                    },
+                    child: GestureDetector(
+                      onTap: () async {
+                        final result =await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => AddExp(
+                              id: exp['_id'],
+                              existingTitle: exp['title'],
+                              existingAmount: exp['amount'],
+                              existingDate: exp['date'] != null
+                                  ? DateTime.parse(exp['date'])
+                                  : null,
+                            ),
+                          ),
+                        );
+                        if (result == true) {
+                          _fetchExpense();
+                        }
+                      },
+                      child: Card(
+                        margin: EdgeInsets.symmetric(vertical: 6),
+                        color: Theme.of(context).colorScheme.secondary,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
 
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Row(
-                        children: [
-                          Container(
-                            padding: EdgeInsets.all(10),
-                            decoration: BoxDecoration(
-                              color: Theme.of(
-                                context,
-                              ).colorScheme.primary.withValues(alpha: 0.2),
-                              borderRadius: BorderRadius.circular(15),
-                            ),
-                            child: Icon(
-                              categoryIcons[exp['title']] ?? Icons.attach_money,
-                              color: Theme.of(context).colorScheme.primary,
-                            ),
-                          ),
-                          SizedBox(width: 20),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  exp['title'] ?? 'No Title',
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 23,
-                                  ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Row(
+                            children: [
+                              Container(
+                                padding: EdgeInsets.all(10),
+                                decoration: BoxDecoration(
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.primary.withValues(alpha: 0.2),
+                                  borderRadius: BorderRadius.circular(15),
                                 ),
-                                Text(
-                                  (exp['date'] ?? 'No date').toString().substring(
-                                    0,
-                                    10,
-                                  ),
-                                  style: TextStyle(
-                                    color: Theme.of(context).colorScheme.tertiary,
-                                  ),
+                                child: Icon(
+                                  categoryIcons[exp['title']] ??
+                                      Icons.attach_money,
+                                  color: Theme.of(context).colorScheme.primary,
                                 ),
-                              ],
-                            ),
+                              ),
+                              SizedBox(width: 20),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      exp['title'] ?? 'No Title',
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 23,
+                                      ),
+                                    ),
+                                    Text(
+                                      (exp['date'] ?? 'No date')
+                                          .toString()
+                                          .substring(0, 10),
+                                      style: TextStyle(
+                                        color: Theme.of(
+                                          context,
+                                        ).colorScheme.tertiary,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              SizedBox(width: 70),
+                              Text(
+                                '~₹${exp['amount'] ?? 0}',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 20,
+                                ),
+                              ),
+                            ],
                           ),
-                          SizedBox(width: 70),
-                          Text(
-                            '~₹${exp['amount'] ?? 0}',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 20,
-                            ),
-                          ),
-                        ],
+                        ),
                       ),
                     ),
                   );
@@ -188,8 +229,8 @@ class _HomeState extends State<Home> {
       floatingActionButton: FloatingActionButton(
         backgroundColor: Theme.of(context).colorScheme.primary,
         child: Icon(Icons.add, color: Colors.black),
-        onPressed: () async{
-          final result =await Navigator.push(
+        onPressed: () async {
+          final result = await Navigator.push(
             context,
             MaterialPageRoute(builder: (_) => AddExp()),
           );

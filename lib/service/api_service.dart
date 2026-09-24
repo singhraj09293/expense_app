@@ -61,4 +61,28 @@ class ApiService {
     );
     return response.data['message'];
   }
+
+  Future<void> deleteExp(String id) async {
+    final prefs = await SharedPreferences.getInstance();
+    final tokens = prefs.getString('token');
+    await _dio.delete(
+      '/expense/$id',
+      options: Options(headers: {'Authorization': tokens}),
+    );
+  }
+
+  Future<void> updateExpense(
+    String id,
+    String title,
+    int amount,
+    DateTime date,
+  ) async {
+    final prefs = await SharedPreferences.getInstance();
+    final tokens = prefs.getString('token');
+    await _dio.put(
+      '/expense/$id',
+      data: {"title": title, "amount": amount, "date": date.toIso8601String()},
+      options: Options(headers: {'Authorization': tokens}),
+    );
+  }
 }
