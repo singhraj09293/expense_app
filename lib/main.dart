@@ -1,5 +1,6 @@
 import 'package:expense_app/screen/home.dart';
 import 'package:expense_app/screen/login_screen.dart';
+import 'package:expense_app/screen/main_screen.dart';
 import 'package:expense_app/widget/auth_wrapper.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -28,6 +29,7 @@ class MyApp extends StatelessWidget {
       routes: {
         '/home':(context) => Home(),
         '/login':(context) => LoginScreen(),
+        '/main':(context)=>MainScreen(),
       },
       home: AuthWrapper(),
     );

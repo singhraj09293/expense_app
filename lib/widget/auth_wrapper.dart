@@ -20,7 +20,7 @@ class _AuthWrapperState extends State<AuthWrapper> {
     final tokens = await prefs.getString('token');
 
     if (tokens != null) {
-      Navigator.pushReplacementNamed(context, '/home');
+      Navigator.pushReplacementNamed(context, '/main');
     } else {
       Navigator.pushReplacementNamed(context, '/login');
     }

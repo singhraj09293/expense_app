@@ -17,6 +17,7 @@ class ApiService {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('token', response.data['token']);
     await prefs.setString('username', response.data['username']);
+    await prefs.setString('username', username);
     return response.data['token'];
   }
 
@@ -37,6 +38,8 @@ class ApiService {
     );
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('username', username);
+    await prefs.setString('email', email);
+    await prefs.setString('name', name);
     return response.data['message'];
   }
 
